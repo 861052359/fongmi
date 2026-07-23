@@ -45,13 +45,20 @@ Also still true:
 
 Optional / not in current AAR set: ffmpeg/flac/opus/vp9/iamf decoder AARs (skipped in media CI by default).
 
+### Media3 AAR distribution
+
+- Built by: https://github.com/861052359/media (`release-1.10.1-fongmi`, workflow **Build Media3 AARs**)
+- Release tag used by TV CI: **`media3-aars-1.10.1-fongmi`**
+  - https://github.com/861052359/media/releases/tag/media3-aars-1.10.1-fongmi
+- TV CI (`.github/workflows/build.yml`) downloads `lib-*.aar` into `app/libs/` before Gradle.
+- Local: download the same Release assets into `app/libs/` (still gitignored).
+
 ### Next steps for a new session
 
-1. Ensure `app/libs/lib-*.aar` from media Actions artifact `media3-lib-aars` (run on `861052359/media`).
+1. Confirm TV CI can download Media3 AARs from the media Release tag above.
 2. Fix or stub **MPV** + **PlayerSeekView** so the app compiles without private author binaries.
-3. Wire TV CI to download Media3 AARs into `app/libs/` before Gradle (optional but preferred).
-4. Re-run: `./gradlew assembleMobileArm64_v8aDebug` (or push to trigger Actions).
-5. Media3 rebuild: push/workflow_dispatch on https://github.com/861052359/media `release-1.10.1-fongmi`.
+3. Re-run: `./gradlew assembleMobileArm64_v8aDebug` (or push to trigger Actions).
+4. Media3 rebuild: push/workflow_dispatch on https://github.com/861052359/media `release-1.10.1-fongmi`, then refresh Release assets / tag if needed.
 
 ### CI progress so far (failures fixed)
 

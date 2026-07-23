@@ -7,6 +7,11 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+env:
+  # Prebuilt Media3 AARs from https://github.com/861052359/media
+  MEDIA3_AAR_REPO: 861052359/media
+  MEDIA3_AAR_TAG: media3-aars-1.10.1-fongmi
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,6 +32,27 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+
+      - name: Download Media3 lib-*.aar into app/libs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p app/libs
+          echo "Downloading Media3 AARs from ${MEDIA3_AAR_REPO}@${MEDIA3_AAR_TAG}"
+          # Public release assets on the same GitHub account; gh needs auth for API rate limits.
+          gh release download "${MEDIA3_AAR_TAG}" \
+            --repo "${MEDIA3_AAR_REPO}" \
+            --dir app/libs \
+            --pattern 'lib-*.aar' \
+            --clobber
+          count="$(find app/libs -maxdepth 1 -name 'lib-*.aar' | wc -l)"
+          echo "Found ${count} lib-*.aar in app/libs"
+          ls -lah app/libs/lib-*.aar | head -40
+          if [ "${count}" -lt 10 ]; then
+            echo "Expected at least 10 Media3 AARs, found ${count}" >&2
+            exit 1
+          fi
 
       - name: Create signing keystore
         run: |
