@@ -10,6 +10,8 @@
 *build
 *.jks
 *.properties
+!gradle.properties
+!gradle/wrapper/gradle-wrapper.properties
 lib-*.aar
 /Release
 /docs
