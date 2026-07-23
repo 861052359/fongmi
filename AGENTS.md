@@ -26,39 +26,32 @@ An open-source Android video player app based on [CatVod](https://github.com/Cat
 | GitHub Actions workflow | Exists, runs on `main` |
 | CI: JDK 21, Android SDK, Python 3.10, auto keystore, `local.properties` | Working |
 | CI: Chaquopy Python deps install | Working |
+| Custom Media3 source fork | [861052359/media](https://github.com/861052359/media) branch `release-1.10.1-fongmi` |
+| Media3 AAR CI | media repo workflow **Build Media3 AARs** succeeds (~22 `lib-*.aar`) |
+| Local `app/libs/lib-*.aar` | Present on disk (gitignored; do not commit) |
 
 ### What is blocking the build
 
-**Missing custom Media3 AAR files: `app/libs/lib-*.aar`**
+**Partial Media3 AARs are available, but two hard compile deps are still missing from those AARs:**
 
-- Code depends on `androidx.media3.*` via local AARs:
-  ```groovy
-  // app/build.gradle
-  implementation fileTree(dir: "libs", include: ["*.aar"])
-  ```
-- **Not** pure Maven Media3 — custom / forked APIs are used, including:
-  - `androidx.media3.mpvplayer.*`
-  - `androidx.media3.ui.danmaku.*`
-  - `androidx.media3.common.MediaChapter` / `MediaEdition`
-  - `androidx.media3.ui.PlayerSeekView`
-- These files are **gitignored**:
-  - Root `.gitignore`: `lib-*.aar`
-  - `app/libs/.gitignore`: `lib-*.aar`
-- Disk and Git currently have **no** `lib-*.aar` → compile fails with:
-  ```text
-  package androidx.media3.common does not exist
-  package androidx.media3.session does not exist
-  ```
+1. **`androidx.media3.mpvplayer.*`** (`MpvPlayer` / `MpvPlayerConfig`) — not in public `FongMi/media` tree / AAR set  
+2. **`androidx.media3.ui.PlayerSeekView`** — used in layouts + Activities; not present in built `lib-ui-release.aar`
+
+Also still true:
+
+- `lib-*.aar` remain **gitignored** (root + `app/libs/.gitignore`) — clone CI must download them (or developers place them locally).
+- Local nested clones `/media/` and `/media-temp/` are **gitignored** (built as a separate repo).
+- Do **not** assume pure Maven `androidx.media3:*` is enough.
+
+Optional / not in current AAR set: ffmpeg/flac/opus/vp9/iamf decoder AARs (skipped in media CI by default).
 
 ### Next steps for a new session
 
-1. Obtain custom Media3 `lib-*.aar` from a machine that can already build, or from the original author / private channel.
-2. Place them under `app/libs/`.
-3. Either:
-   - Commit them (and relax `lib-*.aar` ignore rules), **or**
-   - Download them in CI from private storage / a Release.
+1. Ensure `app/libs/lib-*.aar` from media Actions artifact `media3-lib-aars` (run on `861052359/media`).
+2. Fix or stub **MPV** + **PlayerSeekView** so the app compiles without private author binaries.
+3. Wire TV CI to download Media3 AARs into `app/libs/` before Gradle (optional but preferred).
 4. Re-run: `./gradlew assembleMobileArm64_v8aDebug` (or push to trigger Actions).
-5. Do **not** assume adding public `androidx.media3:*` Maven deps alone is enough — custom packages will still fail.
+5. Media3 rebuild: push/workflow_dispatch on https://github.com/861052359/media `release-1.10.1-fongmi`.
 
 ### CI progress so far (failures fixed)
 

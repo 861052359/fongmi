@@ -15,3 +15,14 @@
 lib-*.aar
 /Release
 /docs
+
+# Local clones / side repos (built separately; not part of TV module graph)
+/media/
+/media-temp/
+
+# Local SSH keys / cert material (never commit)
+*.pub
+*.pem
+*.key
+861052359@qq.com
+861052359@qq.com.pub
