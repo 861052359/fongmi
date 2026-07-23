@@ -2,14 +2,10 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ fongmi ]
+    branches: [ main ]
   pull_request:
-    branches: [ fongmi ]
+    branches: [ main ]
   workflow_dispatch:
-
-env:
-  COMPILE_SDK: '37'
-  NDK_VERSION: '27.0.12077973'
 
 jobs:
   build:
@@ -25,13 +21,6 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-
-      - name: Install SDK platform and NDK
-        run: |
-          yes | sdkmanager --install \
-            "platforms;android-${{ env.COMPILE_SDK }}" \
-            "ndk;${{ env.NDK_VERSION }}" \
-            "build-tools;${{ env.COMPILE_SDK }}.0.0" 2>&1
 
       - name: Create signing keystore
         run: |
