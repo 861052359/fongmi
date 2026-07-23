@@ -1,7 +1,11 @@
 .idea
 .vscode
 .gradle
-.github
+# .github is needed for GitHub Actions workflows — kept tracked
+.github/ISSUE_TEMPLATE
+.github/PULL_REQUEST_TEMPLATE
+.github/hosts.yml
+.github/config.yml
 .settings
 *build
 *.jks

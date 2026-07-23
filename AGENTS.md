@@ -113,4 +113,30 @@ TV/
 7. **Non-module directories** (`thunder/`, `tvbus/`, `hook/`, `jianpian/`, `zlive/`, `forcetech/`) contain engine implementations used by catvod — they are NOT Gradle submodules
 8. **Remote control server** binds on port 9978–9998 (NanoHTTPD)
 9. **EPG refresh** happens every 6 hours for live TV
-10. **git add .gitignore** excludes `*.jks`, `*.properties`, `lib-*.aar`, `/Release`, `/docs`
+10. **`.gitignore`** excludes `*.jks`, `*.properties`, `lib-*.aar`, `/Release`, `/docs`. `.github/workflows/` is tracked (CI), other `.github/` content is ignored.
+11. **CI/CD**: GitHub Actions workflow at `.github/workflows/build.yml` — see [CI/CD](#cicd) below.
+
+---
+
+## CI/CD
+
+GitHub Actions workflow at `.github/workflows/build.yml`:
+
+- **Trigger**: Push/PR to `fongmi` branch, or manual dispatch
+- **Build types**: `debug` (default on push/PR), `release` (manual only)
+- **Outputs**: Single APK — `mobile-arm64_v8a`（手机版 ARM64）
+- **Artifacts**: Uploaded as `TV-{build_type}` to the workflow run
+
+### Required secrets (for release builds)
+
+| Secret | Purpose |
+|--------|---------|
+| `STORE_PASSWORD` | Keystore & key password |
+| `KEY_ALIAS` | Signing key alias |
+| `KEY_PASSWORD` | Key password (falls back to `STORE_PASSWORD`) |
+
+For **debug builds**, no secrets are needed — the workflow auto-generates a throwaway debug keystore.
+
+### Note on compileSdk 37
+
+The project targets `compileSdk = 37`, which is a preview/future API level. If the SDK manager cannot install it, adjust `env.COMPILE_SDK` in the workflow or downgrade `compileSdk` in `gradle/libs.versions.toml` to a stable SDK level.
