@@ -78,18 +78,26 @@ public class ExoUtil {
     }
 
     private static RenderersFactory buildRenderersFactory(int renderMode, boolean audioPrefer, boolean videoPrefer) {
+        // Public Media3 AARs lack setFfmpeg*Prefer / setEnableDv7HevcFallback. Prefer flags only
+        // influence extension mode: soft-decode path already uses EXTENSION_RENDERER_MODE_PREFER.
+        int mode = renderMode;
+        if (audioPrefer || videoPrefer) {
+            mode = DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER;
+        }
         DefaultRenderersFactory factory = new DefaultRenderersFactory(App.get()) {
             @Override
             protected AudioSink buildAudioSink(@NonNull Context context, boolean enableFloatOutput, boolean enableAudioOutputPlaybackParams) {
                 return ExoUtil.buildAudioSink(context, enableFloatOutput, enableAudioOutputPlaybackParams);
             }
         };
-        return factory.setFfmpegAudioPrefer(audioPrefer).setFfmpegVideoPrefer(videoPrefer).setEnableDecoderFallback(true).setEnableDv7HevcFallback(PlayerSetting.isDv7HevcFallback()).setExtensionRendererMode(renderMode);
+        return factory.setEnableDecoderFallback(true).setExtensionRendererMode(mode);
     }
 
     private static AudioSink buildAudioSink(Context context, boolean enableFloatOutput, boolean enableAudioOutputPlaybackParams) {
         DefaultAudioSink.Builder builder = new DefaultAudioSink.Builder(context).setEnableFloatOutput(enableFloatOutput).setEnableAudioOutputPlaybackParameters(enableAudioOutputPlaybackParams);
-        if (!PlayerSetting.isAudioPassThrough()) builder.setAudioOutputProvider(new AudioTrackAudioOutputProvider.Builder(null).build());
+        if (!PlayerSetting.isAudioPassThrough()) {
+            builder.setAudioOutputProvider(new AudioTrackAudioOutputProvider.Builder(context).build());
+        }
         return builder.build();
     }
 

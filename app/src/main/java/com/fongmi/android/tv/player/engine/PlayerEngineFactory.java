@@ -47,6 +47,7 @@ public final class PlayerEngineFactory {
     }
 
     private static boolean isMpvReady() {
+        // MPV requires private androidx.media3.mpvplayer AARs; disabled in public builds.
         return PlayerSetting.isMpv() && MpvPlayerEngine.isAvailable();
     }
 }

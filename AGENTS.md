@@ -32,18 +32,22 @@ An open-source Android video player app based on [CatVod](https://github.com/Cat
 
 ### What is blocking the build
 
-**Partial Media3 AARs are available, but two hard compile deps are still missing from those AARs:**
+**Route A (public build) is in tree:** compile without private author binaries.
 
-1. **`androidx.media3.mpvplayer.*`** (`MpvPlayer` / `MpvPlayerConfig`) — not in public `FongMi/media` tree / AAR set  
-2. **`androidx.media3.ui.PlayerSeekView`** — used in layouts + Activities; not present in built `lib-ui-release.aar`
+| Former blocker | Route A handling |
+|----------------|------------------|
+| `androidx.media3.mpvplayer.*` | Stubbed: `MpvUtil.isAvailable()==false`, Exo-only |
+| `androidx.media3.ui.PlayerSeekView` | App-local lightweight widget under `app/.../androidx/media3/ui/PlayerSeekView.java` |
+| `DiskPreloadManager` | `PreCache` is a no-op |
+| Private `DefaultRenderersFactory.setFfmpeg*Prefer` / `setEnableDv7HevcFallback` | Removed; use public extension mode + decoder fallback |
 
-Also still true:
+Still true:
 
-- `lib-*.aar` remain **gitignored** (root + `app/libs/.gitignore`) — clone CI must download them (or developers place them locally).
-- Local nested clones `/media/` and `/media-temp/` are **gitignored** (built as a separate repo).
+- `lib-*.aar` remain **gitignored** — CI downloads from media Release (or place locally).
+- Local nested clones `/media/` and `/media-temp/` are **gitignored**.
 - Do **not** assume pure Maven `androidx.media3:*` is enough.
-
-Optional / not in current AAR set: ffmpeg/flac/opus/vp9/iamf decoder AARs (skipped in media CI by default).
+- Optional native decoder AARs (ffmpeg/flac/…) still not in default media CI set.
+- **Runtime gap:** no MPV engine; no FFmpeg-prefer / disk preload until private AARs or further porting.
 
 ### Media3 AAR distribution
 
@@ -55,10 +59,10 @@ Optional / not in current AAR set: ffmpeg/flac/opus/vp9/iamf decoder AARs (skipp
 
 ### Next steps for a new session
 
-1. Confirm TV CI can download Media3 AARs from the media Release tag above.
-2. Fix or stub **MPV** + **PlayerSeekView** so the app compiles without private author binaries.
-3. Re-run: `./gradlew assembleMobileArm64_v8aDebug` (or push to trigger Actions).
-4. Media3 rebuild: push/workflow_dispatch on https://github.com/861052359/media `release-1.10.1-fongmi`, then refresh Release assets / tag if needed.
+1. Re-run CI / local `assembleMobileArm64_v8aDebug` after Route A stubs.
+2. Fix any remaining compile errors from other private Media3 APIs.
+3. Optional later: port real MPV from community sources (e.g. webhtv) or restore private AARs.
+4. Media3 rebuild: push/workflow_dispatch on https://github.com/861052359/media `release-1.10.1-fongmi`.
 
 ### CI progress so far (failures fixed)
 
